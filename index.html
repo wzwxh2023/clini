@@ -20,6 +20,7 @@
         }
         input[type="text"],
         input[type="date"],
+        input[type="number"],
         select {
             width: 100%;
             padding: 8px;
@@ -31,6 +32,14 @@
             font-weight: normal;
             display: inline-block;
             margin-right: 10px;
+        }
+        .checkbox-columns {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .checkbox-column {
+            min-width: 200px;
+            margin-right: 20px;
         }
         button {
             background-color: #007bff;
@@ -72,45 +81,129 @@
         </div>
 
         <div class="form-group">
+            <label for="nctId">NCT ID (Optional):</label>
+            <input type="text" id="nctId" name="nctId" placeholder="e.g., NCT01234567">
+            <small>Enter a specific NCT ID to filter results.</small>
+        </div>
+
+        <div class="form-group">
             <label>Recruitment Status:</label>
-            <div class="checkbox-group">
-                <input type="checkbox" id="status_recruiting" name="status" value="RECRUITING">
-                <label for="status_recruiting">Recruiting</label>
-
-                <input type="checkbox" id="status_not_yet" name="status" value="NOT_YET_RECRUITING">
-                <label for="status_not_yet">Not Yet Recruiting</label>
-
-                <input type="checkbox" id="status_active" name="status" value="ACTIVE_NOT_RECRUITING">
-                <label for="status_active">Active, Not Recruiting</label>
-
-                <input type="checkbox" id="status_completed" name="status" value="COMPLETED">
-                <label for="status_completed">Completed</label>
-
-                <input type="checkbox" id="status_terminated" name="status" value="TERMINATED">
-                <label for="status_terminated">Terminated</label>
-                 <!-- Add more statuses if needed -->
+            <div class="checkbox-columns">
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_recruiting" name="status" value="RECRUITING">
+                        <label for="status_recruiting">Recruiting</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_not_yet" name="status" value="NOT_YET_RECRUITING">
+                        <label for="status_not_yet">Not Yet Recruiting</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_active" name="status" value="ACTIVE_NOT_RECRUITING">
+                        <label for="status_active">Active, Not Recruiting</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_completed" name="status" value="COMPLETED">
+                        <label for="status_completed">Completed</label>
+                    </div>
+                </div>
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_terminated" name="status" value="TERMINATED">
+                        <label for="status_terminated">Terminated</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_suspended" name="status" value="SUSPENDED">
+                        <label for="status_suspended">Suspended</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_withdrawn" name="status" value="WITHDRAWN">
+                        <label for="status_withdrawn">Withdrawn</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_enrolling" name="status" value="ENROLLING_BY_INVITATION">
+                        <label for="status_enrolling">Enrolling by Invitation</label>
+                    </div>
+                </div>
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_available" name="status" value="AVAILABLE">
+                        <label for="status_available">Available</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_no_longer" name="status" value="NO_LONGER_AVAILABLE">
+                        <label for="status_no_longer">No Longer Available</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_temp_not" name="status" value="TEMPORARILY_NOT_AVAILABLE">
+                        <label for="status_temp_not">Temporarily Not Available</label>
+                    </div>
+                </div>
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_approved" name="status" value="APPROVED_FOR_MARKETING">
+                        <label for="status_approved">Approved for Marketing</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_withheld" name="status" value="WITHHELD">
+                        <label for="status_withheld">Withheld</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_unknown" name="status" value="UNKNOWN">
+                        <label for="status_unknown">Unknown</label>
+                    </div>
+                </div>
             </div>
-            <small>Select one or more statuses. If none selected, might search all.</small>
+            <small>Select one or more statuses. If none selected, all statuses will be included.</small>
         </div>
 
         <div class="form-group">
             <label for="location">Location (e.g., City, State, Country):</label>
             <input type="text" id="location" name="location">
-             <small>Note: API might need specific location format (e.g., Geo-filter). Your n8n workflow might need to adapt this input.</small>
+            <small>Note: API might need specific location format (e.g., Geo-filter).</small>
         </div>
 
-         <div class="form-group">
+        <div class="form-group">
             <label for="startDate">Study Start Date After:</label>
             <input type="date" id="startDate" name="startDate">
             <small>Leave blank if not needed.</small>
         </div>
 
-         <div class="form-group">
+        <div class="form-group">
             <label for="completionDate">Study Completion Date Before:</label>
             <input type="date" id="completionDate" name="completionDate">
-             <small>Leave blank if not needed.</small>
+            <small>Leave blank if not needed.</small>
         </div>
-        <!-- You might need more specific date filters depending on API capabilities -->
+
+        <div class="form-group">
+            <label for="minAge">Minimum Age:</label>
+            <input type="number" id="minAge" name="minAge" min="0" placeholder="e.g., 18">
+            <select id="minAgeUnit" name="minAgeUnit">
+                <option value="years">Years</option>
+                <option value="months">Months</option>
+                <option value="weeks">Weeks</option>
+                <option value="days">Days</option>
+            </select>
+            <small>Leave blank if no minimum age requirement.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="maxAge">Maximum Age:</label>
+            <input type="number" id="maxAge" name="maxAge" min="0" placeholder="e.g., 65">
+            <select id="maxAgeUnit" name="maxAgeUnit">
+                <option value="years">Years</option>
+                <option value="months">Months</option>
+                <option value="weeks">Weeks</option>
+                <option value="days">Days</option>
+            </select>
+            <small>Leave blank if no maximum age requirement.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="pageSize">Results Per Page:</label>
+            <input type="number" id="pageSize" name="pageSize" min="1" max="100" value="10">
+            <small>Number of results to show per page (1-100).</small>
+        </div>
 
         <button type="submit">Search Trials</button>
     </form>
@@ -131,27 +224,60 @@
 
             // --- 1. Collect Data ---
             const disease = document.getElementById('disease').value;
+            const nctId = document.getElementById('nctId').value;
             const location = document.getElementById('location').value;
             const startDate = document.getElementById('startDate').value;
             const completionDate = document.getElementById('completionDate').value;
+            const pageSize = document.getElementById('pageSize').value || '10';
+            
+            // Age data
+            const minAge = document.getElementById('minAge').value;
+            const minAgeUnit = document.getElementById('minAgeUnit').value;
+            const maxAge = document.getElementById('maxAge').value;
+            const maxAgeUnit = document.getElementById('maxAgeUnit').value;
 
             // Collect selected statuses
             const statusCheckboxes = document.querySelectorAll('input[name="status"]:checked');
             const selectedStatuses = Array.from(statusCheckboxes).map(cb => cb.value);
             const statusString = selectedStatuses.join(','); // Join with comma for the API
 
-            // --- 2. Prepare Payload ---
-            // Use keys that your n8n workflow expects (e.g., matching {{ $json.body.KEY }})
+            // --- 2. Prepare Advanced Filter for Ages and Dates ---
+            let advancedFilter = '';
+            
+            // Add date filters
+            if (startDate) {
+                advancedFilter += `AREA[StartDate]${startDate}`;
+            }
+            
+            if (completionDate) {
+                if (advancedFilter) advancedFilter += ' AND ';
+                advancedFilter += `AREA[CompletionDate]${completionDate}`;
+            }
+            
+            // Add age filters
+            if (minAge) {
+                if (advancedFilter) advancedFilter += ' AND ';
+                advancedFilter += `AREA[MinimumAge]RANGE[MIN, ${minAge} ${minAgeUnit}]`;
+            }
+            
+            if (maxAge) {
+                if (advancedFilter) advancedFilter += ' AND ';
+                advancedFilter += `AREA[MaximumAge]RANGE[${maxAge} ${maxAgeUnit}, MAX]`;
+            }
+
+            // --- 3. Prepare Payload ---
             const payload = {
                 disease: disease,
                 status: statusString, // Comma-separated string
-                location: location, // n8n might need to process this further
+                location: location,
                 startDate: startDate, // Format YYYY-MM-DD or empty
-                completionDate: completionDate // Format YYYY-MM-DD or empty
-                // Add any other fields you need
+                completionDate: completionDate, // Format YYYY-MM-DD or empty
+                nctId: nctId,
+                advancedFilter: advancedFilter,
+                pageSize: pageSize
             };
 
-             // --- 3. Send Data via Fetch API ---
+            // --- 4. Send Data via Fetch API ---
             console.log("Sending payload:", payload); // For debugging
             resultMessage.innerHTML = 'Sending request...';
 
@@ -168,13 +294,11 @@
                    throw new Error(`Webhook returned status ${response.status}: ${response.statusText}`);
                 }
                 // Assuming n8n's "Respond to Webhook" sends back JSON
-                 // If it sends text, use response.text() instead
                 return response.json(); // Or response.text()
             })
             .then(data => {
                 console.log("Success:", data); // Log the response from n8n
                 resultMessage.className = 'success';
-                // Display a success message. You might customize this based on the actual response 'data'.
                 resultMessage.innerHTML = 'Search request sent successfully! Check n8n or the response data.';
                 // Optionally display some results if n8n sends them back:
                 // resultMessage.innerHTML = `Success! Found ${data.studies?.length || 0} studies.`;
