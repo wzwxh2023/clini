@@ -249,11 +249,6 @@
                 advancedFilter += `AREA[StartDate]${startDate}`;
             }
             
-            if (completionDate) {
-                if (advancedFilter) advancedFilter += ' AND ';
-                advancedFilter += `AREA[CompletionDate]${completionDate}`;
-            }
-            
             // Add age filters
             if (minAge) {
                 if (advancedFilter) advancedFilter += ' AND ';
