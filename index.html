@@ -19,6 +19,7 @@
             font-weight: bold;
         }
         input[type="text"],
+        input[type="date"],
         input[type="number"],
         select {
             width: 100%;
@@ -70,31 +71,98 @@
     </style>
 </head>
 <body>
-    <h1>Clinical Trial Search</h1>
-    
-    <form id="searchForm">
+
+    <h1>Search Clinical Trials</h1>
+
+    <form id="clinicalTrialForm">
         <div class="form-group">
-            <label for="disease">Disease/Condition:</label>
-            <input type="text" id="disease" name="disease" placeholder="e.g., lung cancer">
+            <label for="disease">Disease / Condition:</label>
+            <input type="text" id="disease" name="disease" required>
         </div>
-        
+
         <div class="form-group">
-            <label for="status">Status:</label>
-            <select id="status" name="status">
-                <option value="">All Statuses</option>
-                <option value="Recruiting">Recruiting</option>
-                <option value="Active, not recruiting">Active, not recruiting</option>
-                <option value="Completed">Completed</option>
-                <option value="Withdrawn">Withdrawn</option>
-                <option value="Terminated">Terminated</option>
-            </select>
+            <label for="nctId">NCT ID (Optional):</label>
+            <input type="text" id="nctId" name="nctId" placeholder="e.g., NCT01234567">
+            <small>Enter a specific NCT ID to filter results.</small>
         </div>
-        
+
         <div class="form-group">
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="location" placeholder="e.g., Boston, New York">
+            <label>Recruitment Status:</label>
+            <div class="checkbox-columns">
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_recruiting" name="status" value="RECRUITING">
+                        <label for="status_recruiting">Recruiting</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_not_yet" name="status" value="NOT_YET_RECRUITING">
+                        <label for="status_not_yet">Not Yet Recruiting</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_active" name="status" value="ACTIVE_NOT_RECRUITING">
+                        <label for="status_active">Active, Not Recruiting</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_completed" name="status" value="COMPLETED">
+                        <label for="status_completed">Completed</label>
+                    </div>
+                </div>
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_terminated" name="status" value="TERMINATED">
+                        <label for="status_terminated">Terminated</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_suspended" name="status" value="SUSPENDED">
+                        <label for="status_suspended">Suspended</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_withdrawn" name="status" value="WITHDRAWN">
+                        <label for="status_withdrawn">Withdrawn</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_enrolling" name="status" value="ENROLLING_BY_INVITATION">
+                        <label for="status_enrolling">Enrolling by Invitation</label>
+                    </div>
+                </div>
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_available" name="status" value="AVAILABLE">
+                        <label for="status_available">Available</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_no_longer" name="status" value="NO_LONGER_AVAILABLE">
+                        <label for="status_no_longer">No Longer Available</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_temp_not" name="status" value="TEMPORARILY_NOT_AVAILABLE">
+                        <label for="status_temp_not">Temporarily Not Available</label>
+                    </div>
+                </div>
+                <div class="checkbox-column">
+                    <div>
+                        <input type="checkbox" id="status_approved" name="status" value="APPROVED_FOR_MARKETING">
+                        <label for="status_approved">Approved for Marketing</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_withheld" name="status" value="WITHHELD">
+                        <label for="status_withheld">Withheld</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="status_unknown" name="status" value="UNKNOWN">
+                        <label for="status_unknown">Unknown</label>
+                    </div>
+                </div>
+            </div>
+            <small>Select one or more statuses. If none selected, all statuses will be included.</small>
         </div>
-        
+
+        <div class="form-group">
+            <label for="location">Location (e.g., City, State, Country):</label>
+            <input type="text" id="location" name="location">
+            <small>Note: API might need specific location format (e.g., Geo-filter).</small>
+        </div>
+
         <div class="form-group">
             <label for="startYear">Study Start Year After:</label>
             <input type="number" id="startYear" name="startYear" min="1900" max="2050" placeholder="e.g., 2022">
@@ -104,91 +172,142 @@
             <label for="completionYear">Study Completion Year Before:</label>
             <input type="number" id="completionYear" name="completionYear" min="1900" max="2050" placeholder="e.g., 2025">
         </div>
-        
+
         <div class="form-group">
-            <label for="nctId">NCT ID:</label>
-            <input type="text" id="nctId" name="nctId" placeholder="e.g., NCT01234567">
+            <label for="minAge">Minimum Age:</label>
+            <input type="number" id="minAge" name="minAge" min="0" placeholder="e.g., 18">
+            <select id="minAgeUnit" name="minAgeUnit">
+                <option value="years">Years</option>
+                <option value="months">Months</option>
+                <option value="weeks">Weeks</option>
+                <option value="days">Days</option>
+            </select>
+            <small>Leave blank if no minimum age requirement.</small>
         </div>
-        
+
         <div class="form-group">
-            <button type="button" id="searchButton">Search</button>
+            <label for="maxAge">Maximum Age:</label>
+            <input type="number" id="maxAge" name="maxAge" min="0" placeholder="e.g., 65">
+            <select id="maxAgeUnit" name="maxAgeUnit">
+                <option value="years">Years</option>
+                <option value="months">Months</option>
+                <option value="weeks">Weeks</option>
+                <option value="days">Days</option>
+            </select>
+            <small>Leave blank if no maximum age requirement.</small>
         </div>
+
+        <div class="form-group">
+            <label for="pageSize">Results Per Page:</label>
+            <input type="number" id="pageSize" name="pageSize" min="1" max="100" value="10">
+            <small>Number of results to show per page (1-100).</small>
+        </div>
+
+        <button type="submit">Search Trials</button>
     </form>
-    
-    <div id="resultMessage" style="display: none;"></div>
-    
+
+    <div id="resultMessage"></div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchButton = document.getElementById('searchButton');
-            const resultMessage = document.getElementById('resultMessage');
+        const form = document.getElementById('clinicalTrialForm');
+        const resultMessage = document.getElementById('resultMessage');
+        // --- IMPORTANT: REPLACE WITH YOUR ACTUAL N8N WEBHOOK URL ---
+        const webhookUrl = 'http://localhost:5678/webhook-test/4959465a-db23-4186-ba02-220696db3638';
+        // --- Make sure it's the Production URL, not the Test URL ---
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission (page reload)
+            resultMessage.innerHTML = ''; // Clear previous messages
+            resultMessage.className = ''; // Clear previous styling
+
+            // --- 1. Collect Data ---
+            const disease = document.getElementById('disease').value;
+            const nctId = document.getElementById('nctId').value;
+            const location = document.getElementById('location').value;
+            const startYear = document.getElementById('startYear').value;
+            const completionYear = document.getElementById('completionYear').value;
+            const pageSize = document.getElementById('pageSize').value || '10';
             
-            searchButton.addEventListener('click', function() {
-                // --- 1. Gather form values ---
-                const disease = document.getElementById('disease').value.trim();
-                const status = document.getElementById('status').value;
-                const location = document.getElementById('location').value.trim();
-                const startYear = document.getElementById('startYear').value.trim();
-                const completionYear = document.getElementById('completionYear').value.trim();
-                const nctId = document.getElementById('nctId').value.trim();
-                
-                // --- 2. Prepare Advanced Filter for Years ---
-                let advancedFilter = '';
-                
-                // Add year filters
-                if (startYear) {
-                    advancedFilter += `AREA[StartDate]${startYear}`;
+            // Age data
+            const minAge = document.getElementById('minAge').value;
+            const minAgeUnit = document.getElementById('minAgeUnit').value;
+            const maxAge = document.getElementById('maxAge').value;
+            const maxAgeUnit = document.getElementById('maxAgeUnit').value;
+
+            // Collect selected statuses
+            const statusCheckboxes = document.querySelectorAll('input[name="status"]:checked');
+            const selectedStatuses = Array.from(statusCheckboxes).map(cb => cb.value);
+            const statusString = selectedStatuses.join(','); // Join with comma for the API
+
+            // --- 2. Prepare Advanced Filter for Years ---
+            let advancedFilter = '';
+            
+            // Add year filters
+            if (startYear) {
+                advancedFilter += `AREA[StartDate]${startYear}`;
+            }
+            
+            if (completionYear) {
+                if (advancedFilter) advancedFilter += ' AND ';
+                advancedFilter += `AREA[CompletionDate]${completionYear}`;
+            }
+            
+            // Add age filters
+            if (minAge) {
+                if (advancedFilter) advancedFilter += ' AND ';
+                advancedFilter += `AREA[MinimumAge]RANGE[MIN, ${minAge} ${minAgeUnit}]`;
+            }
+            
+            if (maxAge) {
+                if (advancedFilter) advancedFilter += ' AND ';
+                advancedFilter += `AREA[MaximumAge]RANGE[${maxAge} ${maxAgeUnit}, MAX]`;
+            }
+
+            // --- 3. Prepare Payload ---
+            const payload = {
+                disease: disease,
+                status: statusString, // Comma-separated string
+                location: location,
+                startYear: startYear,
+                completionYear: completionYear,
+                nctId: nctId,
+                advancedFilter: advancedFilter,
+                pageSize: pageSize
+            };
+
+            // --- 4. Send Data via Fetch API ---
+            console.log("Sending payload:", payload); // For debugging
+            resultMessage.innerHTML = 'Sending request...';
+
+            fetch(webhookUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload), // Convert JS object to JSON string
+            })
+            .then(response => {
+                if (!response.ok) {
+                    // If response status is not 2xx, throw an error
+                   throw new Error(`Webhook returned status ${response.status}: ${response.statusText}`);
                 }
-                
-                if (completionYear) {
-                    if (advancedFilter) advancedFilter += ' AND ';
-                    advancedFilter += `AREA[CompletionDate]${completionYear}`;
-                }
-                
-                // --- 3. Build the payload ---
-                const payload = {
-                    disease: disease,
-                    status: status,
-                    location: location,
-                    startYear: startYear,
-                    completionYear: completionYear,
-                    nctId: nctId,
-                    advancedFilter: advancedFilter,
-                    pageSize: 1 // Just for example, limiting results
-                };
-                
-                // --- 4. Log the payload (for development) ---
-                console.log("Search payload:", payload);
-                
-                // --- 5. Send to webhook (simulate for example) ---
-                // For demonstration, we'll just show what would be sent
-                resultMessage.textContent = JSON.stringify(payload, null, 2);
-                resultMessage.style.display = 'block';
+                // Assuming n8n's "Respond to Webhook" sends back JSON
+                return response.json(); // Or response.text()
+            })
+            .then(data => {
+                console.log("Success:", data); // Log the response from n8n
                 resultMessage.className = 'success';
-                
-                // In a real application, you'd use fetch or XMLHttpRequest:
-                /*
-                fetch('https://your-webhook-url.com/api/trials/search', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(response => response.json())
-                .then(data => {
-                    // Handle the response
-                    resultMessage.textContent = `Found ${data.totalCount} clinical trials`;
-                    resultMessage.style.display = 'block';
-                    resultMessage.className = 'success';
-                })
-                .catch(error => {
-                    resultMessage.textContent = `Error: ${error.message}`;
-                    resultMessage.style.display = 'block';
-                    resultMessage.className = 'error';
-                });
-                */
+                resultMessage.innerHTML = 'Search request sent successfully! Check n8n or the response data.';
+                // Optionally display some results if n8n sends them back:
+                // resultMessage.innerHTML = `Success! Found ${data.studies?.length || 0} studies.`;
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                resultMessage.className = 'error';
+                resultMessage.innerHTML = `Error sending request: ${error.message}`;
             });
         });
     </script>
+
 </body>
 </html>
