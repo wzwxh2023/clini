@@ -1,310 +1,238 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clinical Trial Search</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="text"],
-        input[type="date"],
-        input[type="number"],
-        select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box; /* Important for consistent width */
-        }
-        .checkbox-group label {
-            font-weight: normal;
-            display: inline-block;
-            margin-right: 10px;
-        }
-        .checkbox-columns {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .checkbox-column {
-            min-width: 200px;
-            margin-right: 20px;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        #resultMessage {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .success {
-            background-color: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        .error {
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-    </style>
-</head>
-<body>
+<h1>Search Clinical Trials</h1>
 
-    <h1>Search Clinical Trials</h1>
+<form id="clinicalTrialForm">
+    <div class="form-group">
+        <label for="disease">Disease / Condition:</label>
+        <input type="text" id="disease" name="disease" required>
+    </div>
 
-    <form id="clinicalTrialForm">
-        <div class="form-group">
-            <label for="disease">Disease / Condition:</label>
-            <input type="text" id="disease" name="disease" required>
-        </div>
+    <div class="form-group">
+        <label for="nctId">NCT ID (Optional):</label>
+        <input type="text" id="nctId" name="nctId" placeholder="e.g., NCT01234567">
+        <small>Enter a specific NCT ID to filter results.</small>
+    </div>
 
-        <div class="form-group">
-            <label for="nctId">NCT ID (Optional):</label>
-            <input type="text" id="nctId" name="nctId" placeholder="e.g., NCT01234567">
-            <small>Enter a specific NCT ID to filter results.</small>
-        </div>
-
-        <div class="form-group">
-            <label>Recruitment Status:</label>
-            <div class="checkbox-columns">
-                <div class="checkbox-column">
-                    <div>
-                        <input type="checkbox" id="status_recruiting" name="status" value="RECRUITING">
-                        <label for="status_recruiting">Recruiting</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_not_yet" name="status" value="NOT_YET_RECRUITING">
-                        <label for="status_not_yet">Not Yet Recruiting</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_active" name="status" value="ACTIVE_NOT_RECRUITING">
-                        <label for="status_active">Active, Not Recruiting</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_completed" name="status" value="COMPLETED">
-                        <label for="status_completed">Completed</label>
-                    </div>
+    <div class="form-group">
+        <label>Recruitment Status:</label>
+        <div class="checkbox-columns">
+            <div class="checkbox-column">
+                <div>
+                    <input type="checkbox" id="status_recruiting" name="status" value="RECRUITING">
+                    <label for="status_recruiting">Recruiting</label>
                 </div>
-                <div class="checkbox-column">
-                    <div>
-                        <input type="checkbox" id="status_terminated" name="status" value="TERMINATED">
-                        <label for="status_terminated">Terminated</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_suspended" name="status" value="SUSPENDED">
-                        <label for="status_suspended">Suspended</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_withdrawn" name="status" value="WITHDRAWN">
-                        <label for="status_withdrawn">Withdrawn</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_enrolling" name="status" value="ENROLLING_BY_INVITATION">
-                        <label for="status_enrolling">Enrolling by Invitation</label>
-                    </div>
+                <div>
+                    <input type="checkbox" id="status_not_yet" name="status" value="NOT_YET_RECRUITING">
+                    <label for="status_not_yet">Not Yet Recruiting</label>
                 </div>
-                <div class="checkbox-column">
-                    <div>
-                        <input type="checkbox" id="status_available" name="status" value="AVAILABLE">
-                        <label for="status_available">Available</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_no_longer" name="status" value="NO_LONGER_AVAILABLE">
-                        <label for="status_no_longer">No Longer Available</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_temp_not" name="status" value="TEMPORARILY_NOT_AVAILABLE">
-                        <label for="status_temp_not">Temporarily Not Available</label>
-                    </div>
+                <div>
+                    <input type="checkbox" id="status_active" name="status" value="ACTIVE_NOT_RECRUITING">
+                    <label for="status_active">Active, Not Recruiting</label>
                 </div>
-                <div class="checkbox-column">
-                    <div>
-                        <input type="checkbox" id="status_approved" name="status" value="APPROVED_FOR_MARKETING">
-                        <label for="status_approved">Approved for Marketing</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_withheld" name="status" value="WITHHELD">
-                        <label for="status_withheld">Withheld</label>
-                    </div>
-                    <div>
-                        <input type="checkbox" id="status_unknown" name="status" value="UNKNOWN">
-                        <label for="status_unknown">Unknown</label>
-                    </div>
+                <div>
+                    <input type="checkbox" id="status_completed" name="status" value="COMPLETED">
+                    <label for="status_completed">Completed</label>
                 </div>
             </div>
-            <small>Select one or more statuses. If none selected, all statuses will be included.</small>
+            <div class="checkbox-column">
+                <div>
+                    <input type="checkbox" id="status_terminated" name="status" value="TERMINATED">
+                    <label for="status_terminated">Terminated</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="status_suspended" name="status" value="SUSPENDED">
+                    <label for="status_suspended">Suspended</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="status_withdrawn" name="status" value="WITHDRAWN">
+                    <label for="status_withdrawn">Withdrawn</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="status_enrolling" name="status" value="ENROLLING_BY_INVITATION">
+                    <label for="status_enrolling">Enrolling by Invitation</label>
+                </div>
+            </div>
+            <div class="checkbox-column">
+                <div>
+                    <input type="checkbox" id="status_available" name="status" value="AVAILABLE">
+                    <label for="status_available">Available</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="status_no_longer" name="status" value="NO_LONGER_AVAILABLE">
+                    <label for="status_no_longer">No Longer Available</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="status_temp_not" name="status" value="TEMPORARILY_NOT_AVAILABLE">
+                    <label for="status_temp_not">Temporarily Not Available</label>
+                </div>
+            </div>
+            <div class="checkbox-column">
+                <div>
+                    <input type="checkbox" id="status_approved" name="status" value="APPROVED_FOR_MARKETING">
+                    <label for="status_approved">Approved for Marketing</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="status_withheld" name="status" value="WITHHELD">
+                    <label for="status_withheld">Withheld</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="status_unknown" name="status" value="UNKNOWN">
+                    <label for="status_unknown">Unknown</label>
+                </div>
+            </div>
         </div>
+        <small>Select one or more statuses. If none selected, all statuses will be included.</small>
+    </div>
 
-        <div class="form-group">
-            <label for="location">Location (e.g., City, State, Country):</label>
-            <input type="text" id="location" name="location">
-            <small>Note: API might need specific location format (e.g., Geo-filter).</small>
-        </div>
+    <div class="form-group">
+        <label for="location">Location (e.g., City, State, Country):</label>
+        <input type="text" id="location" name="location">
+        <small>Note: API might need specific location format (e.g., Geo-filter).</small>
+    </div>
 
-        <div class="form-group">
-            <label for="startDate">Study Start Date After:</label>
-            <input type="date" id="startDate" name="startDate">
-            <small>Leave blank if not needed.</small>
-        </div>
+    <div class="form-group">
+        <label for="startYear">Study Start Year After:</label>
+        <input type="number" id="startYear" name="startYear" min="1900" max="2050" placeholder="e.g., 2022">
+        <small>Enter only the year (e.g., 2022). Leave blank if not needed.</small>
+    </div>
 
-        <div class="form-group">
-            <label for="completionDate">Study Completion Date Before:</label>
-            <input type="date" id="completionDate" name="completionDate">
-            <small>Leave blank if not needed.</small>
-        </div>
+    <div class="form-group">
+        <label for="completionYear">Study Completion Year Before:</label>
+        <input type="number" id="completionYear" name="completionYear" min="1900" max="2050" placeholder="e.g., 2025">
+        <small>Enter only the year (e.g., 2025). Leave blank if not needed.</small>
+    </div>
 
-        <div class="form-group">
-            <label for="minAge">Minimum Age:</label>
-            <input type="number" id="minAge" name="minAge" min="0" placeholder="e.g., 18">
-            <select id="minAgeUnit" name="minAgeUnit">
-                <option value="years">Years</option>
-                <option value="months">Months</option>
-                <option value="weeks">Weeks</option>
-                <option value="days">Days</option>
-            </select>
-            <small>Leave blank if no minimum age requirement.</small>
-        </div>
+    <div class="form-group">
+        <label for="minAge">Minimum Age:</label>
+        <input type="number" id="minAge" name="minAge" min="0" placeholder="e.g., 18">
+        <select id="minAgeUnit" name="minAgeUnit">
+            <option value="years">Years</option>
+            <option value="months">Months</option>
+            <option value="weeks">Weeks</option>
+            <option value="days">Days</option>
+        </select>
+        <small>Leave blank if no minimum age requirement.</small>
+    </div>
 
-        <div class="form-group">
-            <label for="maxAge">Maximum Age:</label>
-            <input type="number" id="maxAge" name="maxAge" min="0" placeholder="e.g., 65">
-            <select id="maxAgeUnit" name="maxAgeUnit">
-                <option value="years">Years</option>
-                <option value="months">Months</option>
-                <option value="weeks">Weeks</option>
-                <option value="days">Days</option>
-            </select>
-            <small>Leave blank if no maximum age requirement.</small>
-        </div>
+    <div class="form-group">
+        <label for="maxAge">Maximum Age:</label>
+        <input type="number" id="maxAge" name="maxAge" min="0" placeholder="e.g., 65">
+        <select id="maxAgeUnit" name="maxAgeUnit">
+            <option value="years">Years</option>
+            <option value="months">Months</option>
+            <option value="weeks">Weeks</option>
+            <option value="days">Days</option>
+        </select>
+        <small>Leave blank if no maximum age requirement.</small>
+    </div>
 
-        <div class="form-group">
-            <label for="pageSize">Results Per Page:</label>
-            <input type="number" id="pageSize" name="pageSize" min="1" max="100" value="10">
-            <small>Number of results to show per page (1-100).</small>
-        </div>
+    <div class="form-group">
+        <label for="pageSize">Results Per Page:</label>
+        <input type="number" id="pageSize" name="pageSize" min="1" max="100" value="10">
+        <small>Number of results to show per page (1-100).</small>
+    </div>
 
-        <button type="submit">Search Trials</button>
-    </form>
+    <button type="submit">Search Trials</button>
+</form>
 
-    <div id="resultMessage"></div>
+<div id="resultMessage"></div>
 
-    <script>
-        const form = document.getElementById('clinicalTrialForm');
-        const resultMessage = document.getElementById('resultMessage');
-        // --- IMPORTANT: REPLACE WITH YOUR ACTUAL N8N WEBHOOK URL ---
-        const webhookUrl = 'http://localhost:5678/webhook-test/4959465a-db23-4186-ba02-220696db3638';
-        // --- Make sure it's the Production URL, not the Test URL ---
+<script>
+    const form = document.getElementById('clinicalTrialForm');
+    const resultMessage = document.getElementById('resultMessage');
+    // --- IMPORTANT: REPLACE WITH YOUR ACTUAL N8N WEBHOOK URL ---
+    const webhookUrl = 'http://localhost:5678/webhook-test/4959465a-db23-4186-ba02-220696db3638';
+    // --- Make sure it's the Production URL, not the Test URL ---
 
-        form.addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the default form submission (page reload)
-            resultMessage.innerHTML = ''; // Clear previous messages
-            resultMessage.className = ''; // Clear previous styling
+    form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission (page reload)
+        resultMessage.innerHTML = ''; // Clear previous messages
+        resultMessage.className = ''; // Clear previous styling
 
-            // --- 1. Collect Data ---
-            const disease = document.getElementById('disease').value;
-            const nctId = document.getElementById('nctId').value;
-            const location = document.getElementById('location').value;
-            const startDate = document.getElementById('startDate').value;
-            const completionDate = document.getElementById('completionDate').value;
-            const pageSize = document.getElementById('pageSize').value || '10';
-            
-            // Age data
-            const minAge = document.getElementById('minAge').value;
-            const minAgeUnit = document.getElementById('minAgeUnit').value;
-            const maxAge = document.getElementById('maxAge').value;
-            const maxAgeUnit = document.getElementById('maxAgeUnit').value;
+        // --- 1. Collect Data ---
+        const disease = document.getElementById('disease').value;
+        const nctId = document.getElementById('nctId').value;
+        const location = document.getElementById('location').value;
+        const startYear = document.getElementById('startYear').value;
+        const completionYear = document.getElementById('completionYear').value;
+        const pageSize = document.getElementById('pageSize').value || '10';
+        
+        // Age data
+        const minAge = document.getElementById('minAge').value;
+        const minAgeUnit = document.getElementById('minAgeUnit').value;
+        const maxAge = document.getElementById('maxAge').value;
+        const maxAgeUnit = document.getElementById('maxAgeUnit').value;
 
-            // Collect selected statuses
-            const statusCheckboxes = document.querySelectorAll('input[name="status"]:checked');
-            const selectedStatuses = Array.from(statusCheckboxes).map(cb => cb.value);
-            const statusString = selectedStatuses.join(','); // Join with comma for the API
+        // Collect selected statuses
+        const statusCheckboxes = document.querySelectorAll('input[name="status"]:checked');
+        const selectedStatuses = Array.from(statusCheckboxes).map(cb => cb.value);
+        const statusString = selectedStatuses.join(','); // Join with comma for the API
 
-            // --- 2. Prepare Advanced Filter for Ages and Dates ---
-            let advancedFilter = '';
-            
-            // Add date filters
-            if (startDate) {
-                advancedFilter += `AREA[StartDate]${startDate}`;
+        // --- 2. Prepare Advanced Filter for Ages and Years ---
+        let advancedFilter = '';
+        
+        // Add year filters
+        if (startYear) {
+            advancedFilter += `AREA[StartDate]${startYear}`;
+        }
+        
+        if (completionYear) {
+            if (advancedFilter) advancedFilter += ' AND ';
+            advancedFilter += `AREA[CompletionDate]${completionYear}`;
+        }
+        
+        // Add age filters
+        if (minAge) {
+            if (advancedFilter) advancedFilter += ' AND ';
+            advancedFilter += `AREA[MinimumAge]RANGE[MIN, ${minAge} ${minAgeUnit}]`;
+        }
+        
+        if (maxAge) {
+            if (advancedFilter) advancedFilter += ' AND ';
+            advancedFilter += `AREA[MaximumAge]RANGE[${maxAge} ${maxAgeUnit}, MAX]`;
+        }
+
+        // --- 3. Prepare Payload ---
+        const payload = {
+            disease: disease,
+            status: statusString, // Comma-separated string
+            location: location,
+            startYear: startYear, // Just the year
+            completionYear: completionYear, // Just the year
+            nctId: nctId,
+            advancedFilter: advancedFilter,
+            pageSize: pageSize
+        };
+
+        // --- 4. Send Data via Fetch API ---
+        console.log("Sending payload:", payload); // For debugging
+        resultMessage.innerHTML = 'Sending request...';
+
+        fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload), // Convert JS object to JSON string
+        })
+        .then(response => {
+            if (!response.ok) {
+                // If response status is not 2xx, throw an error
+               throw new Error(`Webhook returned status ${response.status}: ${response.statusText}`);
             }
-            
-            // Add age filters
-            if (minAge) {
-                if (advancedFilter) advancedFilter += ' AND ';
-                advancedFilter += `AREA[MinimumAge]RANGE[MIN, ${minAge} ${minAgeUnit}]`;
-            }
-            
-            if (maxAge) {
-                if (advancedFilter) advancedFilter += ' AND ';
-                advancedFilter += `AREA[MaximumAge]RANGE[${maxAge} ${maxAgeUnit}, MAX]`;
-            }
-
-            // --- 3. Prepare Payload ---
-            const payload = {
-                disease: disease,
-                status: statusString, // Comma-separated string
-                location: location,
-                startDate: startDate, // Format YYYY-MM-DD or empty
-                completionDate: completionDate, // Format YYYY-MM-DD or empty
-                nctId: nctId,
-                advancedFilter: advancedFilter,
-                pageSize: pageSize
-            };
-
-            // --- 4. Send Data via Fetch API ---
-            console.log("Sending payload:", payload); // For debugging
-            resultMessage.innerHTML = 'Sending request...';
-
-            fetch(webhookUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(payload), // Convert JS object to JSON string
-            })
-            .then(response => {
-                if (!response.ok) {
-                    // If response status is not 2xx, throw an error
-                   throw new Error(`Webhook returned status ${response.status}: ${response.statusText}`);
-                }
-                // Assuming n8n's "Respond to Webhook" sends back JSON
-                return response.json(); // Or response.text()
-            })
-            .then(data => {
-                console.log("Success:", data); // Log the response from n8n
-                resultMessage.className = 'success';
-                resultMessage.innerHTML = 'Search request sent successfully! Check n8n or the response data.';
-                // Optionally display some results if n8n sends them back:
-                // resultMessage.innerHTML = `Success! Found ${data.studies?.length || 0} studies.`;
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-                resultMessage.className = 'error';
-                resultMessage.innerHTML = `Error sending request: ${error.message}`;
-            });
+            // Assuming n8n's "Respond to Webhook" sends back JSON
+            return response.json(); // Or response.text()
+        })
+        .then(data => {
+            console.log("Success:", data); // Log the response from n8n
+            resultMessage.className = 'success';
+            resultMessage.innerHTML = 'Search request sent successfully! Check n8n or the response data.';
+            // Optionally display some results if n8n sends them back:
+            // resultMessage.innerHTML = `Success! Found ${data.studies?.length || 0} studies.`;
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            resultMessage.className = 'error';
+            resultMessage.innerHTML = `Error sending request: ${error.message}`;
         });
-    </script>
-
-</body>
-</html>
+    });
+</script>
