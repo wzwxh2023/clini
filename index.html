@@ -267,11 +267,14 @@
             const maxAgeUnit = document.getElementById('maxAgeUnit').value;
 
             // Collect selected statuses
-            let statusString = '';
-            if (!allStatusCheckbox.checked) {
-                const selectedStatuses = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(cb => cb.value);
-                statusString = selectedStatuses.join(','); // Join with comma for the API
-            }
+           let statusString = '';
+           if (!allStatusCheckbox.checked) {
+           const selectedStatuses = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(cb => cb.value);
+           statusString = selectedStatuses.join(','); // Join with comma for the API
+        } else {
+        // Include all possible status values when "All Statuses" is checked
+        statusString = "ACTIVE_NOT_RECRUITING,COMPLETED,ENROLLING_BY_INVITATION,NOT_YET_RECRUITING,RECRUITING,SUSPENDED,TERMINATED,WITHDRAWN,AVAILABLE,NO_LONGER_AVAILABLE,TEMPORARILY_NOT_AVAILABLE,APPROVED_FOR_MARKETING,WITHHELD,UNKNOWN";
+         }
 
             // --- 2. Prepare Advanced Filter for Years ---
             let advancedFilter = '';
