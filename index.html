@@ -318,35 +318,25 @@
             const completionDateFrom = formatDate(document.getElementById('completionDateFrom').value);
             const completionDateTo = formatDate(document.getElementById('completionDateTo').value);
             
-            // Build the date part only for the query preview
-            let dateQueryText = '';
+            // Build the human-readable query for preview
+            let queryText = '';
+            
+            // Only add sections with actual data
+            if (disease) {
+                queryText += `${disease}`;
+            }
             
             if (startDateFrom || startDateTo) {
-                dateQueryText += `Study start from ${startDateFrom} to ${startDateTo}`;
+                queryText += ` | Study start from ${startDateFrom} to ${startDateTo}`;
             }
             
             if (completionDateFrom || completionDateTo) {
-                if (dateQueryText) {
-                    dateQueryText += ' | ';
-                }
-                dateQueryText += `Primary completion from ${completionDateFrom} to ${completionDateTo}`;
-            }
-            
-            // Build the full query with disease included (for preview only)
-            let fullQueryText = '';
-            if (disease) {
-                fullQueryText = disease;
-                
-                if (dateQueryText) {
-                    fullQueryText += ' | ' + dateQueryText;
-                }
-            } else if (dateQueryText) {
-                fullQueryText = dateQueryText;
+                queryText += ` | Primary completion from ${completionDateFrom} to ${completionDateTo}`;
             }
             
             // Update the query preview
-            if (fullQueryText) {
-                queryPreview.textContent = `Search Query: ${fullQueryText}`;
+            if (queryText) {
+                queryPreview.textContent = `Search Query: ${queryText}`;
                 queryPreview.style.display = 'block';
             } else {
                 queryPreview.style.display = 'none';
@@ -377,12 +367,6 @@
             const completionDateFrom = document.getElementById('completionDateFrom').value;
             const completionDateTo = document.getElementById('completionDateTo').value;
             
-            // Format dates for display
-            const startDateFromFormatted = formatDate(startDateFrom);
-            const startDateToFormatted = formatDate(startDateTo);
-            const completionDateFromFormatted = formatDate(completionDateFrom);
-            const completionDateToFormatted = formatDate(completionDateTo);
-            
             // Age data
             const minAge = document.getElementById('minAge').value;
             const minAgeUnit = document.getElementById('minAgeUnit').value;
@@ -399,20 +383,42 @@
                 statusString = "ACTIVE_NOT_RECRUITING,COMPLETED,ENROLLING_BY_INVITATION,NOT_YET_RECRUITING,RECRUITING,SUSPENDED,TERMINATED,WITHDRAWN,AVAILABLE,NO_LONGER_AVAILABLE,TEMPORARILY_NOT_AVAILABLE,APPROVED_FOR_MARKETING,WITHHELD,UNKNOWN";
             }
 
-            // --- 2. Create date-only filter for advancedFilter ---
-            let dateOnlyFilter = '';
+            // --- 2. Create API-compatible filter format ---
+            let apiFilter = '';
             
-            // Add study start date range if either date exists
+            // Add start date range filters
             if (startDateFrom || startDateTo) {
-                dateOnlyFilter = `Study start from ${startDateFromFormatted} to ${startDateToFormatted}`;
+                if (startDateFrom && startDateTo) {
+                    apiFilter += `AREA[StartDate]RANGE[${startDateFrom}, ${startDateTo}]`;
+                } else if (startDateFrom) {
+                    apiFilter += `AREA[StartDate]RANGE[${startDateFrom}, MAX]`;
+                } else if (startDateTo) {
+                    apiFilter += `AREA[StartDate]RANGE[MIN, ${startDateTo}]`;
+                }
             }
             
-            // Add completion date range if either date exists
+            // Add completion date range filters
             if (completionDateFrom || completionDateTo) {
-                if (dateOnlyFilter) {
-                    dateOnlyFilter += ' | ';
+                if (apiFilter) apiFilter += ' AND ';
+                
+                if (completionDateFrom && completionDateTo) {
+                    apiFilter += `AREA[CompletionDate]RANGE[${completionDateFrom}, ${completionDateTo}]`;
+                } else if (completionDateFrom) {
+                    apiFilter += `AREA[CompletionDate]RANGE[${completionDateFrom}, MAX]`;
+                } else if (completionDateTo) {
+                    apiFilter += `AREA[CompletionDate]RANGE[MIN, ${completionDateTo}]`;
                 }
-                dateOnlyFilter += `Primary completion from ${completionDateFromFormatted} to ${completionDateToFormatted}`;
+            }
+            
+            // Add age filters
+            if (minAge) {
+                if (apiFilter) apiFilter += ' AND ';
+                apiFilter += `AREA[MinimumAge]RANGE[MIN, ${minAge} ${minAgeUnit}]`;
+            }
+            
+            if (maxAge) {
+                if (apiFilter) apiFilter += ' AND ';
+                apiFilter += `AREA[MaximumAge]RANGE[${maxAge} ${maxAgeUnit}, MAX]`;
             }
             
             // --- 3. Prepare Payload ---
@@ -421,9 +427,9 @@
                 status: statusString, // Comma-separated string or empty for all
                 location: location,
                 nctId: nctId,
-                advancedFilter: dateOnlyFilter.trim(), // Only include date information
+                advancedFilter: apiFilter, // Use the API-compatible format
                 pageSize: pageSize,
-                // Include date ranges separately for possible direct API use
+                // Include date ranges separately
                 startDateFrom: startDateFrom,
                 startDateTo: startDateTo,
                 completionDateFrom: completionDateFrom,
