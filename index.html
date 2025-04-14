@@ -28,6 +28,22 @@
             border-radius: 4px;
             box-sizing: border-box; /* Important for consistent width */
         }
+        .date-range {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .date-range-label {
+            width: 50px;
+            font-weight: normal;
+        }
+        .date-input {
+            flex: 1;
+        }
+        .date-icon {
+            cursor: pointer;
+        }
         .checkbox-group label {
             font-weight: normal;
             display: inline-block;
@@ -88,6 +104,44 @@
             <label for="nctId">NCT ID (Optional):</label>
             <input type="text" id="nctId" name="nctId" placeholder="e.g., NCT01234567">
             <small>Enter a specific NCT ID to filter results.</small>
+        </div>
+
+        <div class="form-group">
+            <label>Study Start Date Range:</label>
+            <div class="date-range">
+                <span class="date-range-label">From:</span>
+                <div class="date-input">
+                    <input type="date" id="startDateFrom" name="startDateFrom">
+                </div>
+                <span class="date-icon">📅</span>
+            </div>
+            <div class="date-range">
+                <span class="date-range-label">To:</span>
+                <div class="date-input">
+                    <input type="date" id="startDateTo" name="startDateTo">
+                </div>
+                <span class="date-icon">📅</span>
+            </div>
+            <small>Select a range for study start dates.</small>
+        </div>
+        
+        <div class="form-group">
+            <label>Primary Completion Date Range:</label>
+            <div class="date-range">
+                <span class="date-range-label">From:</span>
+                <div class="date-input">
+                    <input type="date" id="completionDateFrom" name="completionDateFrom">
+                </div>
+                <span class="date-icon">📅</span>
+            </div>
+            <div class="date-range">
+                <span class="date-range-label">To:</span>
+                <div class="date-input">
+                    <input type="date" id="completionDateTo" name="completionDateTo">
+                </div>
+                <span class="date-icon">📅</span>
+            </div>
+            <small>Select a range for primary completion dates.</small>
         </div>
 
         <div class="form-group">
@@ -172,16 +226,6 @@
         </div>
 
         <div class="form-group">
-            <label for="startYear">Study Start Year After:</label>
-            <input type="number" id="startYear" name="startYear" min="1900" max="2050" placeholder="e.g., 2022">
-        </div>
-        
-        <div class="form-group">
-            <label for="completionYear">Study Completion Year Before:</label>
-            <input type="number" id="completionYear" name="completionYear" min="1900" max="2050" placeholder="e.g., 2025">
-        </div>
-
-        <div class="form-group">
             <label for="minAge">Minimum Age:</label>
             <input type="number" id="minAge" name="minAge" min="0" placeholder="e.g., 18">
             <select id="minAgeUnit" name="minAgeUnit">
@@ -256,9 +300,13 @@
             const disease = document.getElementById('disease').value;
             const nctId = document.getElementById('nctId').value;
             const location = document.getElementById('location').value;
-            const startYear = document.getElementById('startYear').value;
-            const completionYear = document.getElementById('completionYear').value;
             const pageSize = document.getElementById('pageSize').value || '10';
+            
+            // Date range values
+            const startDateFrom = document.getElementById('startDateFrom').value;
+            const startDateTo = document.getElementById('startDateTo').value;
+            const completionDateFrom = document.getElementById('completionDateFrom').value;
+            const completionDateTo = document.getElementById('completionDateTo').value;
             
             // Age data
             const minAge = document.getElementById('minAge').value;
@@ -276,17 +324,31 @@
         statusString = "ACTIVE_NOT_RECRUITING,COMPLETED,ENROLLING_BY_INVITATION,NOT_YET_RECRUITING,RECRUITING,SUSPENDED,TERMINATED,WITHDRAWN,AVAILABLE,NO_LONGER_AVAILABLE,TEMPORARILY_NOT_AVAILABLE,APPROVED_FOR_MARKETING,WITHHELD,UNKNOWN";
          }
 
-            // --- 2. Prepare Advanced Filter for Years ---
+            // --- 2. Prepare Advanced Filter for Dates and Ages ---
             let advancedFilter = '';
             
-            // Add year filters
-            if (startYear) {
-                advancedFilter += `AREA[StartDate]${startYear}`;
+            // Add start date range filters
+            if (startDateFrom || startDateTo) {
+                if (startDateFrom && startDateTo) {
+                    advancedFilter += `AREA[StartDate]RANGE[${startDateFrom}, ${startDateTo}]`;
+                } else if (startDateFrom) {
+                    advancedFilter += `AREA[StartDate]RANGE[${startDateFrom}, MAX]`;
+                } else if (startDateTo) {
+                    advancedFilter += `AREA[StartDate]RANGE[MIN, ${startDateTo}]`;
+                }
             }
             
-            if (completionYear) {
+            // Add completion date range filters
+            if (completionDateFrom || completionDateTo) {
                 if (advancedFilter) advancedFilter += ' AND ';
-                advancedFilter += `AREA[CompletionDate]${completionYear}`;
+                
+                if (completionDateFrom && completionDateTo) {
+                    advancedFilter += `AREA[CompletionDate]RANGE[${completionDateFrom}, ${completionDateTo}]`;
+                } else if (completionDateFrom) {
+                    advancedFilter += `AREA[CompletionDate]RANGE[${completionDateFrom}, MAX]`;
+                } else if (completionDateTo) {
+                    advancedFilter += `AREA[CompletionDate]RANGE[MIN, ${completionDateTo}]`;
+                }
             }
             
             // Add age filters
@@ -305,11 +367,14 @@
                 disease: disease,
                 status: statusString, // Comma-separated string or empty for all
                 location: location,
-                startYear: startYear,
-                completionYear: completionYear,
                 nctId: nctId,
                 advancedFilter: advancedFilter,
-                pageSize: pageSize
+                pageSize: pageSize,
+                // Include date ranges separately for possible direct API use
+                startDateFrom: startDateFrom,
+                startDateTo: startDateTo,
+                completionDateFrom: completionDateFrom,
+                completionDateTo: completionDateTo
             };
 
             // --- 4. Send Data via Fetch API ---
@@ -343,6 +408,13 @@
                 resultMessage.className = 'error';
                 resultMessage.innerHTML = `Error sending request: ${error.message}`;
             });
+        });
+
+        // Set default dates (optional)
+        document.addEventListener('DOMContentLoaded', function() {
+            // Example: Set today as the default "From" date for start date
+            // const today = new Date().toISOString().split('T')[0];
+            // document.getElementById('startDateFrom').value = today;
         });
     </script>
 
