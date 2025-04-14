@@ -88,6 +88,13 @@
             margin-bottom: 10px;
             font-weight: bold;
         }
+        #queryPreview {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -257,18 +264,30 @@
 
         <button type="submit">Search Trials</button>
     </form>
-
+    
+    <div id="queryPreview"></div>
     <div id="resultMessage"></div>
 
     <script>
         const form = document.getElementById('clinicalTrialForm');
         const resultMessage = document.getElementById('resultMessage');
+        const queryPreview = document.getElementById('queryPreview');
         const allStatusCheckbox = document.getElementById('status_all');
         const statusCheckboxes = document.querySelectorAll('input[name="status"]');
         
         // --- IMPORTANT: REPLACE WITH YOUR ACTUAL N8N WEBHOOK URL ---
         const webhookUrl = 'http://localhost:5678/webhook-test/4959465a-db23-4186-ba02-220696db3638';
         // --- Make sure it's the Production URL, not the Test URL ---
+
+        // Format date function (MM/DD/YYYY)
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${month}/${day}/${year}`;
+        }
 
         // Handle "All Statuses" checkbox
         allStatusCheckbox.addEventListener('change', function() {
@@ -291,6 +310,56 @@
             });
         });
 
+        // Update form elements to show a preview of the query
+        function updateQueryPreview() {
+            const disease = document.getElementById('disease').value;
+            const startDateFrom = formatDate(document.getElementById('startDateFrom').value);
+            const startDateTo = formatDate(document.getElementById('startDateTo').value);
+            const completionDateFrom = formatDate(document.getElementById('completionDateFrom').value);
+            const completionDateTo = formatDate(document.getElementById('completionDateTo').value);
+            
+            // Build the date part only for the query preview
+            let dateQueryText = '';
+            
+            if (startDateFrom || startDateTo) {
+                dateQueryText += `Study start from ${startDateFrom} to ${startDateTo}`;
+            }
+            
+            if (completionDateFrom || completionDateTo) {
+                if (dateQueryText) {
+                    dateQueryText += ' | ';
+                }
+                dateQueryText += `Primary completion from ${completionDateFrom} to ${completionDateTo}`;
+            }
+            
+            // Build the full query with disease included (for preview only)
+            let fullQueryText = '';
+            if (disease) {
+                fullQueryText = disease;
+                
+                if (dateQueryText) {
+                    fullQueryText += ' | ' + dateQueryText;
+                }
+            } else if (dateQueryText) {
+                fullQueryText = dateQueryText;
+            }
+            
+            // Update the query preview
+            if (fullQueryText) {
+                queryPreview.textContent = `Search Query: ${fullQueryText}`;
+                queryPreview.style.display = 'block';
+            } else {
+                queryPreview.style.display = 'none';
+            }
+        }
+
+        // Add listeners to update the query preview
+        document.getElementById('disease').addEventListener('input', updateQueryPreview);
+        document.getElementById('startDateFrom').addEventListener('change', updateQueryPreview);
+        document.getElementById('startDateTo').addEventListener('change', updateQueryPreview);
+        document.getElementById('completionDateFrom').addEventListener('change', updateQueryPreview);
+        document.getElementById('completionDateTo').addEventListener('change', updateQueryPreview);
+
         form.addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent the default form submission (page reload)
             resultMessage.innerHTML = ''; // Clear previous messages
@@ -308,6 +377,12 @@
             const completionDateFrom = document.getElementById('completionDateFrom').value;
             const completionDateTo = document.getElementById('completionDateTo').value;
             
+            // Format dates for display
+            const startDateFromFormatted = formatDate(startDateFrom);
+            const startDateToFormatted = formatDate(startDateTo);
+            const completionDateFromFormatted = formatDate(completionDateFrom);
+            const completionDateToFormatted = formatDate(completionDateTo);
+            
             // Age data
             const minAge = document.getElementById('minAge').value;
             const minAgeUnit = document.getElementById('minAgeUnit').value;
@@ -315,60 +390,38 @@
             const maxAgeUnit = document.getElementById('maxAgeUnit').value;
 
             // Collect selected statuses
-           let statusString = '';
-           if (!allStatusCheckbox.checked) {
-           const selectedStatuses = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(cb => cb.value);
-           statusString = selectedStatuses.join(','); // Join with comma for the API
-        } else {
-        // Include all possible status values when "All Statuses" is checked
-        statusString = "ACTIVE_NOT_RECRUITING,COMPLETED,ENROLLING_BY_INVITATION,NOT_YET_RECRUITING,RECRUITING,SUSPENDED,TERMINATED,WITHDRAWN,AVAILABLE,NO_LONGER_AVAILABLE,TEMPORARILY_NOT_AVAILABLE,APPROVED_FOR_MARKETING,WITHHELD,UNKNOWN";
-         }
+            let statusString = '';
+            if (!allStatusCheckbox.checked) {
+                const selectedStatuses = Array.from(document.querySelectorAll('input[name="status"]:checked')).map(cb => cb.value);
+                statusString = selectedStatuses.join(','); // Join with comma for the API
+            } else {
+                // Include all possible status values when "All Statuses" is checked
+                statusString = "ACTIVE_NOT_RECRUITING,COMPLETED,ENROLLING_BY_INVITATION,NOT_YET_RECRUITING,RECRUITING,SUSPENDED,TERMINATED,WITHDRAWN,AVAILABLE,NO_LONGER_AVAILABLE,TEMPORARILY_NOT_AVAILABLE,APPROVED_FOR_MARKETING,WITHHELD,UNKNOWN";
+            }
 
-            // --- 2. Prepare Advanced Filter for Dates and Ages ---
-            let advancedFilter = '';
+            // --- 2. Create date-only filter for advancedFilter ---
+            let dateOnlyFilter = '';
             
-            // Add start date range filters
+            // Add study start date range if either date exists
             if (startDateFrom || startDateTo) {
-                if (startDateFrom && startDateTo) {
-                    advancedFilter += `AREA[StartDate]RANGE[${startDateFrom}, ${startDateTo}]`;
-                } else if (startDateFrom) {
-                    advancedFilter += `AREA[StartDate]RANGE[${startDateFrom}, MAX]`;
-                } else if (startDateTo) {
-                    advancedFilter += `AREA[StartDate]RANGE[MIN, ${startDateTo}]`;
-                }
+                dateOnlyFilter = `Study start from ${startDateFromFormatted} to ${startDateToFormatted}`;
             }
             
-            // Add completion date range filters
+            // Add completion date range if either date exists
             if (completionDateFrom || completionDateTo) {
-                if (advancedFilter) advancedFilter += ' AND ';
-                
-                if (completionDateFrom && completionDateTo) {
-                    advancedFilter += `AREA[CompletionDate]RANGE[${completionDateFrom}, ${completionDateTo}]`;
-                } else if (completionDateFrom) {
-                    advancedFilter += `AREA[CompletionDate]RANGE[${completionDateFrom}, MAX]`;
-                } else if (completionDateTo) {
-                    advancedFilter += `AREA[CompletionDate]RANGE[MIN, ${completionDateTo}]`;
+                if (dateOnlyFilter) {
+                    dateOnlyFilter += ' | ';
                 }
+                dateOnlyFilter += `Primary completion from ${completionDateFromFormatted} to ${completionDateToFormatted}`;
             }
             
-            // Add age filters
-            if (minAge) {
-                if (advancedFilter) advancedFilter += ' AND ';
-                advancedFilter += `AREA[MinimumAge]RANGE[MIN, ${minAge} ${minAgeUnit}]`;
-            }
-            
-            if (maxAge) {
-                if (advancedFilter) advancedFilter += ' AND ';
-                advancedFilter += `AREA[MaximumAge]RANGE[${maxAge} ${maxAgeUnit}, MAX]`;
-            }
-
             // --- 3. Prepare Payload ---
             const payload = {
                 disease: disease,
                 status: statusString, // Comma-separated string or empty for all
                 location: location,
                 nctId: nctId,
-                advancedFilter: advancedFilter,
+                advancedFilter: dateOnlyFilter.trim(), // Only include date information
                 pageSize: pageSize,
                 // Include date ranges separately for possible direct API use
                 startDateFrom: startDateFrom,
@@ -410,11 +463,10 @@
             });
         });
 
-        // Set default dates (optional)
+        // Initialize the query preview on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // Example: Set today as the default "From" date for start date
-            // const today = new Date().toISOString().split('T')[0];
-            // document.getElementById('startDateFrom').value = today;
+            // Hide the query preview initially
+            queryPreview.style.display = 'none';
         });
     </script>
 
